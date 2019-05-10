@@ -1,194 +1,251 @@
 <?php
 
-namespace c0013r\GhostAPI\Providers;
+namespace Tttptd\GhostAPI\Providers;
 
-use c0013r\GhostAPI\Exceptions\DataException;
+use Tttptd\GhostAPI\Exceptions\DataException;
+use GuzzleHttp\Client;
 use Illuminate\Support\Collection;
 
 abstract class BaseProvider
 {
-	private $client;
 
-	protected $entityCode;
-	protected $entityModelClass;
+    protected $entityCode;
 
-	protected $fields = [];
+    protected $entityModelClass;
 
-	protected $limit = 'all';
-	protected $page = 1;
+    protected $fields = [];
 
-	protected $filter;
-	protected $simpleFilterDelimeter = '+';
+    protected $limit = 'all';
 
-	protected $includes = [];
+    protected $page = 1;
 
-	public function __construct($client)
-	{
-		$this->client = $client;
-	}
+    protected $filter;
 
-	public function get(): Collection
-	{
-		return $this->request($this->entityCode);
-	}
+    protected $simpleFilterDelimeter = '+';
 
-	public function getById(string $id)
-	{
-		return $this->request(sprintf('%s/%s', $this->entityCode, $id))->first();
-	}
+    protected $includes = [];
 
-	public function getBySlug(string $slug)
-	{
-		return $this->request(sprintf('%s/slug/%s', $this->entityCode, $slug))->first();
-	}
+    /**
+     * @var Client
+     */
+    private $client;
 
-	public function page(int $page)
-	{
-		$this->page = $page;
+    /**
+     * BaseProvider constructor.
+     * @param $client
+     */
+    public function __construct($client)
+    {
+        $this->client = $client;
+    }
 
-		return $this;
-	}
+    /**
+     * @return mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function first()
+    {
+        return $this->get()->first();
+    }
 
-	public function limit(int $limit = 15)
-	{
-		$this->limit = $limit;
+    /**
+     * @return Collection
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function get():Collection
+    {
+        return $this->request($this->entityCode);
+    }
 
-		return $this;
-	}
+    /**
+     * @param string $id
+     * @return mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function getById(string $id)
+    {
+        return $this->request(sprintf('%s/%s', $this->entityCode, $id))->first();
+    }
 
-	public function addFilter($filterData)
-	{
-		if (\is_array($filterData) || \is_string($filterData))
-		{
-			$this->filter = $filterData;
-		}
-		else
-		{
-			throw new \InvalidArgumentException('Filter data is invalid. Use array for simple filter or string for custom filter.');
-		}
+    /**
+     * @param string $slug
+     * @return mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function getBySlug(string $slug)
+    {
+        return $this->request(sprintf('%s/slug/%s', $this->entityCode, $slug))->first();
+    }
 
-		return $this;
-	}
+    public function page(int $page)
+    {
+        $this->page = $page;
 
-	public function filterAndMode()
-	{
-		$this->simpleFilterDelimeter = '+';
+        return $this;
+    }
 
-		return $this;
-	}
+    public function limit(int $limit = 15)
+    {
+        $this->limit = $limit;
 
-	public function filterOrMode()
-	{
-		$this->simpleFilterDelimeter = ',';
+        return $this;
+    }
 
-		return $this;
-	}
+    public function addFilter($filterData)
+    {
+        if(\is_array($filterData) || \is_string($filterData)) {
+            $this->filter = $filterData;
+        }
+        else {
+            throw new \InvalidArgumentException('Filter data is invalid. Use array for simple filter or string for custom filter.');
+        }
 
-	private function request(string $url): Collection
-	{
-		$results = new Collection();
+        return $this;
+    }
 
-		$queryData = $this->modifyQuery($this->buildBaseQuery());
-		$data = $this->client->request($url, $queryData);
+    public function filterAndMode()
+    {
+        $this->simpleFilterDelimeter = '+';
 
-		if (array_key_exists($this->entityCode, $data) && \is_array($data[$this->entityCode]))
-		{
-			foreach ($data[$this->entityCode] as $postData)
-			{
-				$results->push(new $this->entityModelClass($postData));
-			}
+        return $this;
+    }
 
-			return $results;
-		}
+    public function filterOrMode()
+    {
+        $this->simpleFilterDelimeter = ',';
 
-		throw DataException::noResultsFound($this->entityCode);
-	}
+        return $this;
+    }
 
-	protected function modifyQuery(array $queryData): array
-	{
-		return $queryData;
-	}
+    /**
+     * @param string $field
+     * @return $this
+     */
+    public function addField(string $field)
+    {
+        $this->fields[] = trim($field);
+        return $this;
+    }
 
-	private function buildBaseQuery(): array
-	{
-		$options = [
-			'query' => [
-				'absolute_urls' => true,
-				'limit' => $this->limit,
-				'page' => $this->page,
-				'include' => array_unique($this->includes)
-			]
-		];
+    /**
+     * @return $this
+     */
+    public function clearFields()
+    {
+        $this->fields = [];
+        return $this;
+    }
 
-		// set filtering for results
-		if ($this->filter !== null)
-		{
-			$readyFilter = null;
+    /**
+     * @param string $fields 'id,slug,excerpt'
+     * @return $this
+     */
+    public function setFields(string $fields)
+    {
+        $this->fields = explode(',', $fields);
+        return $this;
+    }
 
-			if (\is_array($this->filter))
-			{
-				$readyFilter = [];
+    protected function modifyQuery(array $queryData):array
+    {
+        return $queryData;
+    }
 
-				foreach ($this->filter as $filterParameter => $filterValue)
-				{
-					$readyFilter[] = $filterParameter . ':' . $this->prepareFilterValue($filterValue);
-				}
+    protected function addInclude(string $include)
+    {
+        $this->includes[] = $include;
 
-				$readyFilter = implode($this->simpleFilterDelimeter, $readyFilter);
-			}
-			else if (\is_string($this->filter))
-			{
-				$readyFilter = $this->filter;
-			}
+        return $this;
+    }
 
-			if ($readyFilter !== null)
-			{
-				$options['query']['filter'] = $readyFilter;
-			}
-		}
+    /**
+     * @param string $url
+     * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    private function request(string $url):Collection
+    {
+        $results = new Collection();
 
-		// filtering the fields we want to get
-		if (\count($this->fields) > 0)
-		{
-			$options['query']['fields'] = $this->fields;
-		}
+        $queryData = $this->modifyQuery($this->buildBaseQuery());
+        // dd($queryData);
+        $data = $this->client->request($url, $queryData);
+        // dd($data);
 
-		return $options;
-	}
+        if(array_key_exists($this->entityCode, $data) && \is_array($data[ $this->entityCode ])) {
+            foreach($data[ $this->entityCode ] as $postData) {
+                $results->push(new $this->entityModelClass($postData));
+            }
 
-	private function prepareFilterValue($value)
-	{
-		$resultValues = [];
+            return $results;
+        }
 
-		if (\is_array($value))
-		{
-			foreach ($value as $singleValue)
-			{
-				$resultValues[] = $this->prepareFilterValue($singleValue);
-			}
-		}
-		else if (\is_bool($value))
-		{
-			$resultValues[] = $value ? 'true' : 'false';
-		}
-		else if ($value === null)
-		{
-			$resultValues[] = 'null';
-		}
-		else
-		{
-			$resultValues[] = "'$value'";
-		}
+        throw DataException::noResultsFound($this->entityCode);
+    }
 
-		return \count($resultValues) === 1
-					? $resultValues[0]
-					: sprintf('[%s]', implode(',', $resultValues));
-	}
+    private function buildBaseQuery():array
+    {
+        $options = [
+            'query' => [
+                // 'absolute_urls' => true,
+                'limit' => $this->limit,
+                'page' => $this->page,
+                'include' => array_unique($this->includes),
+            ],
+        ];
 
-	protected function addInclude(string $include)
-	{
-		$this->includes[] = $include;
+        // set filtering for results
+        if($this->filter !== null) {
+            $readyFilter = null;
 
-		return $this;
-	}
+            if(\is_array($this->filter)) {
+                $readyFilter = [];
+
+                foreach($this->filter as $filterParameter => $filterValue) {
+                    $readyFilter[] = $filterParameter . ':' . $this->prepareFilterValue($filterValue);
+                }
+
+                $readyFilter = implode($this->simpleFilterDelimeter, $readyFilter);
+            }
+            elseif(\is_string($this->filter)) {
+                $readyFilter = $this->filter;
+            }
+
+            if($readyFilter !== null) {
+                $options['query']['filter'] = $readyFilter;
+            }
+        }
+
+        // filtering the fields we want to get
+        if(\count($this->fields) > 0) {
+            $options['query']['fields'] = implode(',', $this->fields);
+        }
+
+        return $options;
+    }
+
+    private function prepareFilterValue($value)
+    {
+        $resultValues = [];
+
+        if(\is_array($value)) {
+            foreach($value as $singleValue) {
+                $resultValues[] = $this->prepareFilterValue($singleValue);
+            }
+        }
+        elseif(\is_bool($value)) {
+            $resultValues[] = $value ? 'true' : 'false';
+        }
+        elseif($value === null) {
+            $resultValues[] = 'null';
+        }
+        else {
+            $resultValues[] = "'$value'";
+        }
+
+        return \count($resultValues) === 1
+            ? $resultValues[0]
+            : sprintf('[%s]', implode(',', $resultValues));
+    }
+
 }

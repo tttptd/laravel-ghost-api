@@ -1,28 +1,51 @@
 <?php
 
-namespace c0013r\GhostAPI\Providers;
+namespace Tttptd\GhostAPI\Providers;
 
 class PostProvider extends BaseProvider
 {
-	protected $entityCode = 'posts';
-	protected $entityModelClass = \c0013r\GhostAPI\Models\Post::class;
 
-	private $formats = ['html', 'plaintext'];
+    protected const SHORT_FIELDS = [
+        'id',
+        'uuid',
+        'title',
+        'slug',
+        'primary_tag',
+        'feature_image',
+        'custom_excerpt',
+        'published_at',
+    ];
 
-	public function includeAuthors()
-	{
-		return $this->addInclude('authors');
-	}
+    protected $entityCode = 'posts';
 
-	public function includeTags()
-	{
-		return $this->addInclude('tags');
-	}
+    protected $entityModelClass = \Tttptd\GhostAPI\Models\Post::class;
 
-	protected function modifyQuery(array $queryData): array
-	{
-		$queryData['query']['formats'] = $this->formats;
+    // private $formats = ['html', 'plaintext'];
+    // private $formats = [];
 
-		return $queryData;
-	}
+    public function includeAuthors()
+    {
+        return $this->addInclude('authors');
+    }
+
+    public function includeTags()
+    {
+        return $this->addInclude('tags');
+    }
+
+    /**
+     * @return $this
+     */
+    public function short()
+    {
+        return $this->setFields(implode(',', self::SHORT_FIELDS));
+    }
+
+    // protected function modifyQuery(array $queryData):array
+    // {
+    //     $queryData['query']['formats'] = $this->formats;
+    //
+    //     return $queryData;
+    // }
+
 }

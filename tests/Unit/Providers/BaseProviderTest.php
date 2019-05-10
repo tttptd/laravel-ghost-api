@@ -1,8 +1,8 @@
 <?php
 
-namespace c0013r\GhostAPI\Providers;
+namespace Tttptd\GhostAPI\Providers;
 
-use c0013r\GhostAPI\Tests\TestCase;
+use Tttptd\GhostAPI\Tests\TestCase;
 
 class BaseProviderTest extends TestCase
 {

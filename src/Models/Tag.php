@@ -1,13 +1,10 @@
 <?php
 
-namespace c0013r\GhostAPI\Models;
-
-use Carbon\Carbon;
+namespace Tttptd\GhostAPI\Models;
 
 /**
  * Class Tag
- * @package c0013r\GhostAPI\Models
- *
+ * @package Tttptd\GhostAPI\Models
  * @property-read string $name
  * @property-read string $description
  * @property-read string $hidden

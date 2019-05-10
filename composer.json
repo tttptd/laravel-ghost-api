@@ -1,6 +1,6 @@
 {
-    "name": "c0013r/laravel-ghost-api",
-    "description": "ghost.org api for Laravel",
+    "name": "tttptd/laravel-ghost-api",
+    "description": "ghost.org api v2 for Laravel (forked from c0013r/laravel-ghost-api)",
     "license": "MIT",
     "authors": [
         {
@@ -8,12 +8,16 @@
             "email": "andrew@7glyphs.com",
             "homepage": "https://7glyphs.com",
 	        "role": "Developer"
+        },
+        {
+            "name": "Yu Shi",
+            "email": "tttptd@yandex.com"
         }
     ],
-    "homepage": "https://github.com/c0013r/laravel-ghost-api",
+    "homepage": "https://github.com/tttptd/laravel-ghost-api",
     "keywords": ["laravel", "ghost.org", "laravel-ghost-api", "7glyphs"],
     "require": {
-	    "php" : ">=7.1",
+	    "php" : ">=7.2",
         "illuminate/support": "~5",
         "guzzlehttp/guzzle": "^6.3"
     },
@@ -25,22 +29,19 @@
     },
     "autoload": {
         "psr-4": {
-            "c0013r\\GhostAPI\\": "src/"
+            "Tttptd\\GhostAPI\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "c0013r\\GhostAPI\\Tests\\": "tests"
+            "Tttptd\\GhostAPI\\Tests\\": "tests"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "c0013r\\GhostAPI\\ServiceProvider"
-            ],
-            "aliases": {
-                "laravel-ghost-api": "c0013r\\GhostAPI\\Facades\\Ghost"
-            }
+                "Tttptd\\GhostAPI\\ServiceProvider"
+            ]
         }
     }
 }

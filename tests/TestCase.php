@@ -1,6 +1,6 @@
 <?php
 
-namespace c0013r\GhostAPI\Tests;
+namespace Tttptd\GhostAPI\Tests;
 
 use Dotenv\Dotenv;
 use Orchestra\Testbench\TestCase as Orchestra;
@@ -34,7 +34,7 @@ abstract class TestCase extends Orchestra
 	protected function getPackageProviders($app): array
 	{
 		return [
-			\c0013r\GhostAPI\ServiceProvider::class,
+			\Tttptd\GhostAPI\ServiceProvider::class,
 		];
 	}
 

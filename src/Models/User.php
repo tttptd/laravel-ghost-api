@@ -1,13 +1,12 @@
 <?php
 
-namespace c0013r\GhostAPI\Models;
+namespace Tttptd\GhostAPI\Models;
 
 use Carbon\Carbon;
 
 /**
  * Class User
- * @package c0013r\GhostAPI\Models
- *
+ * @package Tttptd\GhostAPI\Models
  * @property-read string $name
  * @property-read string $accessibility
  * @property-read string $email
@@ -23,7 +22,8 @@ use Carbon\Carbon;
  */
 class User extends BaseModel
 {
-	protected $casts = [
-		'lastSeen' => 'datetime',
-	];
+
+    protected $casts = [
+        'lastSeen' => 'datetime',
+    ];
 }

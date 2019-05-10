@@ -1,9 +1,9 @@
 <?php
 
-namespace c0013r\GhostAPI\Tests\Unit\Models;
+namespace Tttptd\GhostAPI\Tests\Unit\Models;
 
-use c0013r\GhostAPI\Models\Tag;
-use c0013r\GhostAPI\Tests\TestCase;
+use Tttptd\GhostAPI\Models\Tag;
+use Tttptd\GhostAPI\Tests\TestCase;
 use Carbon\Carbon;
 
 class TagTest extends TestCase
