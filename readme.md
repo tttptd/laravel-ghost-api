@@ -10,7 +10,7 @@ This is where your description should go. Take a look at [contributing.md](contr
 Via Composer
 
 ``` bash
-$ composer require c0013r/laravel-ghost-api
+$ composer require tttptd/laravel-ghost-api
 ```
 
 Publish config file
@@ -22,7 +22,7 @@ $ php artisan vendor:publish --provider="c0013r\GhostAPI\ServiceProvider"
 ## Usage
 
 ``` php
-use c0013r\GhostAPI\Facades\Ghost;
+use Tttptd\GhostAPI\Facades\Ghost;
 
 // get all posts
 $posts = Ghost::posts()->get();
