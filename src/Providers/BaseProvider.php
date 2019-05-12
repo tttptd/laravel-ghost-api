@@ -2,9 +2,12 @@
 
 namespace Tttptd\GhostAPI\Providers;
 
-use Tttptd\GhostAPI\Exceptions\DataException;
 use GuzzleHttp\Client;
 use Illuminate\Support\Collection;
+use Tttptd\GhostAPI\Exceptions\DataException;
+use Tttptd\GhostAPI\Models\Pagination;
+use function array_key_exists;
+use function is_array;
 
 abstract class BaseProvider
 {
@@ -24,6 +27,11 @@ abstract class BaseProvider
     protected $simpleFilterDelimeter = '+';
 
     protected $includes = [];
+
+    /**
+     * @var Pagination
+     */
+    protected $pagination;
 
     /**
      * @var Client
@@ -146,6 +154,14 @@ abstract class BaseProvider
         return $this;
     }
 
+    /**
+     * @return Pagination
+     */
+    public function getPagination():Pagination
+    {
+        return $this->pagination;
+    }
+
     protected function modifyQuery(array $queryData):array
     {
         return $queryData;
@@ -160,7 +176,7 @@ abstract class BaseProvider
 
     /**
      * @param string $url
-     * @return array
+     * @return Collection
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
     private function request(string $url):Collection
@@ -171,6 +187,10 @@ abstract class BaseProvider
         // dd($queryData);
         $data = $this->client->request($url, $queryData);
         // dd($data);
+
+        if(isset($data['meta']['pagination']) && is_array($data['meta']['pagination'])) {
+            $this->pagination = new Pagination($data['meta']['pagination']);
+        }
 
         if(array_key_exists($this->entityCode, $data) && \is_array($data[ $this->entityCode ])) {
             foreach($data[ $this->entityCode ] as $postData) {
