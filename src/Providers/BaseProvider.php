@@ -36,7 +36,9 @@ abstract class BaseProvider
     /**
      * @var Client
      */
-    private $client;
+    protected $client;
+
+    protected $postUrl = null;
 
     /**
      * BaseProvider constructor.

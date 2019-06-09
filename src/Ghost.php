@@ -2,11 +2,16 @@
 
 namespace Tttptd\GhostAPI;
 
+use Ahc\Jwt\JWT;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 use Tttptd\GhostAPI\Providers\PageProvider;
 use Tttptd\GhostAPI\Providers\PostProvider;
+use Tttptd\GhostAPI\Providers\SubscriptionProvider;
 use Tttptd\GhostAPI\Providers\TagProvider;
 use Tttptd\GhostAPI\Providers\UserProvider;
-use GuzzleHttp\Client;
+use function json_decode;
+use function rtrim;
 
 class Ghost
 {
@@ -29,15 +34,30 @@ class Ghost
     protected $httpClient;
 
     /**
+     * @var Client
+     */
+    protected $adminHttpClient;
+
+    /**
+     * @var string
+     */
+    protected $adminKey;
+
+    /**
      * Ghost constructor.
      */
     public function __construct()
     {
         $this->baseUri = config('ghost.base_uri');
         $this->key = config('ghost.key');
+        $this->adminKey = config('ghost.adminKey');
 
         $this->httpClient = new Client([
             'base_uri' => rtrim($this->baseUri, '/') . '/ghost/api/v2/content/',
+        ]);
+
+        $this->adminHttpClient = new Client([
+            'base_uri' => rtrim($this->baseUri, '/') . '/ghost/api/v2/admin/',
         ]);
     }
 
@@ -74,6 +94,45 @@ class Ghost
         return $data;
     }
 
+    /**
+     * @param        $endpoint
+     * @param        $bodyData
+     * @param string $method
+     * @return mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function requestAdmin($endpoint, $bodyData, string $method = 'GET')
+    {
+        $result = [];
+        $options = [];
+
+        // try {
+            // Подпишем запрос JWT
+            [$id, $secret] = explode(':', $this->adminKey);
+            // Результат hex2bin() не подходит
+            $secret = sodium_hex2bin($secret);
+            $jwt = new JWT($secret, 'HS256', 300);
+            $jwt->registerKeys([$id => $secret]);
+
+            $token = $jwt->encode([
+                'iat' => time(),
+                'exp' => time() + 300,
+                'aud' => '/v2/admin/',
+            ], ['kid' => $id]);
+
+            $options['headers']['Authorization'] = 'Ghost ' . $token;
+
+            $options['form_params'] = $bodyData;
+
+            $response = $this->adminHttpClient->request($method, $endpoint, $options);
+            $result = json_decode($response->getBody()->getContents(), true);
+        // } catch(RequestException $e) {
+        //
+        // }
+
+        return $result;
+    }
+
     public function posts():PostProvider
     {
         return new PostProvider($this);
@@ -97,6 +156,11 @@ class Ghost
     public function page():PageProvider
     {
         return new PageProvider($this);
+    }
+
+    public function subscription():SubscriptionProvider
+    {
+        return new SubscriptionProvider($this);
     }
 
 }
