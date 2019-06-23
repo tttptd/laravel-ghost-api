@@ -3,6 +3,7 @@
 namespace Tttptd\GhostAPI\Providers;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\TransferStats;
 use Illuminate\Support\Collection;
 use Tttptd\GhostAPI\Exceptions\DataException;
 use Tttptd\GhostAPI\Models\Pagination;
