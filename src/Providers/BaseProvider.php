@@ -187,7 +187,8 @@ abstract class BaseProvider
         $results = new Collection();
 
         $queryData = $this->modifyQuery($this->buildBaseQuery());
-        // dd($queryData);
+        // dump($queryData);
+
         $data = $this->client->request($url, $queryData);
         // dd($data);
 
