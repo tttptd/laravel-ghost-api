@@ -20,7 +20,7 @@
 	    "php" : ">=7.2",
         "ext-sodium": "*",
         "adhocore/jwt": "^0.0.6",
-        "illuminate/support": "~5",
+        "illuminate/support": "~6",
         "guzzlehttp/guzzle": "^6.3"
     },
     "require-dev": {
